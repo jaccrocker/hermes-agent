@@ -331,6 +331,7 @@ import { installHudModifierTap } from './hud-modifier'
 import { applyHudElectronOverlay, promoteHudOverlay } from './hud-overlay'
 import { snapHudBounds } from './hud-snap'
 import { createHudSnapShortcut } from './hud-snap-shortcut'
+import { installHudToggleShortcut } from './hud-toggle-shortcut'
 import { buildHudWindowUrl } from './hud-url'
 import { linuxOzoneBackend, resolveHudWindowing } from './hud-windowing'
 import { INSTALL_STAMP, installShape } from './install-stamp'
@@ -6863,6 +6864,12 @@ function installDevToolsShortcut(window) {
       return
     }
 
+    if (hudToggleShortcut.claimsInput(input)) {
+      event.preventDefault()
+
+      return
+    }
+
     const key = input.key.toLowerCase()
 
     // A renderer binding gets first refusal. Chromium otherwise claims F12
@@ -12542,6 +12549,7 @@ async function exitAfterBackendShutdown(code) {
   }
 
   // app.exit() skips will-quit, and every in-app relaunch lands here.
+  hudToggleShortcut.dispose()
   killTimedGitChildren()
   app.exit(code)
 }
@@ -14378,6 +14386,16 @@ function applyHudSnapToPointer() {
 }
 
 const hudSnapShortcut = createHudSnapShortcut(globalShortcut, applyHudSnapToPointer)
+
+const hudToggleShortcut = installHudToggleShortcut({
+  shortcuts: globalShortcut,
+  ipc: ipcMain,
+  getMainWindow: () => mainWindow,
+  getHudWindow: () => hudWindow,
+  closeHudWindow,
+  canToggle: () => IS_MAC && app.isReady() && !isQuittingForHandoff && !backendShutdown.hasStarted(),
+  log: rememberLog
+})
 
 function registerHudSnapShortcut() {
   if (!hudSnapShortcut.register()) {
@@ -18160,6 +18178,7 @@ app.on('before-quit', () => {
 // Close the pooled keep-alive sockets on quit so lingering connections can't
 // hold the event loop open or leak FDs past app teardown.
 app.on('will-quit', () => {
+  hudToggleShortcut.dispose()
   killTimedGitChildren()
   sshIsolatedKeepalives.stopAll()
   destroyKeepaliveAgents()

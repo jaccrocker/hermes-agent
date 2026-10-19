@@ -163,6 +163,8 @@ declare global {
         }
         open: (request?: { sessionId?: null | string; profile?: null | string }) => Promise<{ ok: boolean }>
         close: () => Promise<{ ok: boolean }>
+        setGlobalShortcutEnabled?: (enabled: boolean) => void
+        onToggle?: (callback: () => void) => () => void
         setIgnoreMouse: (ignore: boolean) => void
         beginMove: () => void
         endMove: () => void

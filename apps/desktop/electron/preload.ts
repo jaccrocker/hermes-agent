@@ -132,6 +132,13 @@ contextBridge.exposeInMainWorld('hermesDesktop', {
     },
     open: request => ipcRenderer.invoke('hermes:hud:open', request),
     close: () => ipcRenderer.invoke('hermes:hud:close'),
+    setGlobalShortcutEnabled: enabled => ipcRenderer.send('hermes:hud:global-shortcut', enabled),
+    onToggle: callback => {
+      const listener = () => callback()
+      ipcRenderer.on('hermes:hud:toggle', listener)
+
+      return () => ipcRenderer.removeListener('hermes:hud:toggle', listener)
+    },
     setIgnoreMouse: ignore => ipcRenderer.send('hermes:hud:ignore-mouse', ignore),
     beginMove: () => ipcRenderer.send('hermes:hud:begin-move'),
     endMove: () => ipcRenderer.send('hermes:hud:end-move'),
