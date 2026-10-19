@@ -505,6 +505,7 @@ import {
   quickEntryWindowBounds,
   sanitizeQuickEntrySettings
 } from './quick-entry'
+import { focusQuickEntryWindow } from './quick-entry-window-focus'
 import { createQuitFinalization } from './quit-finalization'
 import {
   type ActiveWork,
@@ -14953,8 +14954,7 @@ function showQuickEntryWindow() {
 
     wireWindowReveal(win, {
       show: () => {
-        win.show()
-        win.focus()
+        focusQuickEntryWindow(win, app, IS_MAC)
       }
     })
 
@@ -14962,8 +14962,7 @@ function showQuickEntryWindow() {
   }
 
   repositionQuickEntryWindow(quickEntryWindow)
-  quickEntryWindow.show()
-  quickEntryWindow.focus()
+  focusQuickEntryWindow(quickEntryWindow, app, IS_MAC)
   // Re-summoned: tell the renderer to clear any stale draft and refocus.
   quickEntryWindow.webContents.send('hermes:quick-entry:shown')
 }
